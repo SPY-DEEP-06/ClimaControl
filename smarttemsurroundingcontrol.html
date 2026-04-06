@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimaControl</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- ANTI-INSPECT & ANTI-COPY SECURITY SCRIPT -->
+    <script>
+        // Disable Right-Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable Keyboard Shortcuts
+        document.onkeydown = function(e) {
+            // Disable F12
+            if(e.keyCode == 123) {
+                return false;
+            }
+            // Disable Ctrl+Shift+I / Cmd+Option+I (Inspect)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+            // Disable Ctrl+Shift+J / Cmd+Option+J (Console)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+            // Disable Ctrl+Shift+C / Cmd+Option+C (Inspect Element)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+            // Disable Ctrl+U / Cmd+Option+U (View Source)
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+        };
+
+        // Advanced: Break debugger if they manage to open it
+        setInterval(function() {
+            var before = new Date().getTime();
+            debugger;
+            var after = new Date().getTime();
+            if (after - before > 100) {
+                // If the debugger pauses execution, you can redirect or clear the page
+                document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px; font-family:sans-serif;'>Security Violation Detected.</h1>";
+            }
+        }, 1000);
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+        /* --- Prevent Text Selection --- */
+        body {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+        }
+
+        /* --- THEME VARIABLES --- */
+        :root {
+            --bg-color: #0b111a; 
+            --panel-bg: rgba(15, 20, 31, 0.5);
+            --panel-glass: rgba(15, 20, 31, 0.3);
+            --border-color: rgba(255, 255, 255, 0.05);
+            
+            --shadow-1: rgba(0, 0, 0, 0.8); 
+            --shadow-2: rgba(255, 255, 255, 0.03); 
+            --inset-shadow-1: rgba(0, 0, 0, 0.6);
+            --inset-shadow-2: rgba(255, 255, 255, 0.02);
+            
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --grid-dot: rgba(255, 255, 255, 0.03);
+            --chart-grid: rgba(255, 255, 255, 0.05);
+            
+            --accent-blue: #00f3ff;
+            --accent-red: #ff003c;
+            --accent-purple: #b026ff;
+            --accent-green: #00ff66;
+            --accent-orange: #ffaa00;
+            --accent-hot: #ff5500;
+        }
+
+        .light-theme {
+            --bg-color: #e2e8f0; 
+            --panel-bg: rgba(226, 232, 240, 0.4);
+            --panel-glass: rgba(255, 255, 255, 0.5);
+            --border-color: rgba(255, 255, 255, 0.6);
+            
+            --shadow-1: rgba(163, 177, 198, 0.6); 
+            --shadow-2: rgba(255, 255, 255, 0.9); 
+            --inset-shadow-1: rgba(163, 177, 198, 0.5);
+            --inset-shadow-2: rgba(255, 255, 255, 0.8);
+            
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --grid-dot: rgba(0, 0, 0, 0.05);
+            --chart-grid: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        h1, h2, h3, .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+        .neo-glass {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            box-shadow: 
+                10px 10px 20px var(--shadow-1), 
+                -5px -5px 15px var(--shadow-2),
+                inset 1px 1px 2px rgba(255,255,255,0.05);
+            border-radius: 1.5rem;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
+        }
+        
+        .neo-glass:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                15px 15px 25px var(--shadow-1), 
+                -8px -8px 20px var(--shadow-2),
+                inset 1px 1px 2px rgba(255,255,255,0.05);
+        }
+
+        .status-badge {
+            background: var(--panel-glass);
+            box-shadow: 
+                inset 4px 4px 8px var(--inset-shadow-1), 
+                inset -4px -4px 8px var(--inset-shadow-2);
+            border-radius: 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .status-badge:hover {
+            background: var(--panel-bg);
+        }
+
+        .ctrl-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            box-shadow: 
+                6px 6px 12px var(--shadow-1), 
+                -6px -6px 12px var(--shadow-2);
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-muted);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ctrl-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .ctrl-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                8px 8px 16px var(--shadow-1), 
+                -8px -8px 16px var(--shadow-2);
+            color: var(--text-main);
+        }
+        .ctrl-btn:hover::before { left: 100%; }
+
+        .ctrl-btn:active {
+            transform: translateY(1px);
+            box-shadow: 
+                inset 4px 4px 8px var(--inset-shadow-1), 
+                inset -4px -4px 8px var(--inset-shadow-2);
+        }
+
+        .mode-off-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(255, 0, 60, 0.2);
+            border-color: rgba(255, 0, 60, 0.4); color: var(--accent-red);
+        }
+        .mode-off-active:hover { color: var(--accent-red); }
+
+        .mode-auto-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(0, 243, 255, 0.2);
+            border-color: rgba(0, 243, 255, 0.4); color: var(--accent-blue);
+        }
+        .mode-auto-active:hover { color: var(--accent-blue); }
+
+        .mode-low-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(0, 255, 102, 0.2);
+            border-color: rgba(0, 255, 102, 0.4); color: var(--accent-green);
+        }
+        .mode-low-active:hover { color: var(--accent-green); }
+
+        .mode-mid-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(255, 170, 0, 0.2);
+            border-color: rgba(255, 170, 0, 0.4); color: var(--accent-orange);
+        }
+        .mode-mid-active:hover { color: var(--accent-orange); }
+
+        .mode-high-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(255, 85, 0, 0.2);
+            border-color: rgba(255, 85, 0, 0.4); color: var(--accent-hot);
+        }
+        .mode-high-active:hover { color: var(--accent-hot); }
+
+        .mode-ai-active {
+            box-shadow: inset 4px 4px 8px var(--inset-shadow-1), inset -4px -4px 8px var(--inset-shadow-2), 0 0 15px rgba(176, 38, 255, 0.2);
+            border-color: rgba(176, 38, 255, 0.4); color: var(--accent-purple);
+        }
+        .mode-ai-active:hover { color: var(--accent-purple); }
+
+        .fan-blade { transform-origin: center; }
+        @keyframes spin-fan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .text-neon-blue { text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .text-neon-red { text-shadow: 0 0 10px rgba(255, 0, 60, 0.5); }
+
+        #overheat-modal {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #overheat-modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            box-shadow: 0 0 40px rgba(255, 0, 60, 0.4), inset 0 0 20px rgba(255, 0, 60, 0.2);
+            border: 1px solid rgba(255,0,60,0.5);
+            animation: pulse-border 1s infinite alternate;
+            background: #0a0101; 
+        }
+        @keyframes pulse-border {
+            from { border-color: rgba(255,0,60,0.3); box-shadow: 0 0 20px rgba(255, 0, 60, 0.2); }
+            to { border-color: rgba(255,0,60,0.8); box-shadow: 0 0 50px rgba(255, 0, 60, 0.6); }
+        }
+
+        #init-overlay { background: var(--bg-color); z-index: 200; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-main); }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8 selection:bg-cyan-500/20">
+
+    <div id="init-overlay" class="fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="neo-glass p-10 text-center max-w-md mx-4">
+            <svg class="w-20 h-20 text-cyan-500 mx-auto mb-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.6));">
+                <circle cx="12" cy="12" r="10" stroke-width="1.5" stroke-dasharray="4 4" class="animate-[spin_8s_linear_infinite]" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5l6.5 3.75v7.5L12 19.5l-6.5-3.75v-7.5L12 4.5z" class="animate-[spin_12s_linear_infinite_reverse]" />
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" class="animate-pulse" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4.5v2.5M12 17v2.5M5.5 8.25l2.5 1.5M18.5 15.75l-2.5-1.5M18.5 8.25l-2.5 1.5M5.5 15.75l2.5-1.5" />
+            </svg>
+            <h1 class="text-2xl font-orbitron font-bold text-[var(--text-main)] mb-2">ClimaControl</h1>
+            <p class="text-[var(--text-muted)] mb-8">Audio engines & database standby.</p>
+            <button onclick="initializeSystem()" class="ctrl-btn px-8 py-3 font-orbitron font-bold tracking-widest text-cyan-500 hover:text-cyan-400">
+                INITIALIZE LINK
+            </button>
+        </div>
+    </div>
+
+    <div id="overheat-modal" class="fixed inset-0 flex items-center justify-center">
+        <div class="modal-content p-8 sm:p-12 text-center max-w-lg mx-4 rounded-3xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-red-500/5 animate-pulse"></div>
+            <svg class="w-24 h-24 text-red-600 mx-auto mb-6 relative z-10 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <h2 class="text-3xl font-orbitron font-bold text-red-500 mb-2 relative z-10 text-neon-red">CORE OVERHEAT</h2>
+            <p class="text-red-300 text-lg mb-6 relative z-10" id="overheat-temp-display">Temperature exceeds critical threshold!</p>
+            <button onclick="dismissAlarm()" class="relative z-10 bg-red-950/30 border border-red-900/50 text-red-500 px-6 py-2 rounded-lg font-bold tracking-widest hover:bg-red-900/40 transition-colors">
+                MUTE ALARM
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 lg:space-y-8 relative z-10">
+        
+        <header class="neo-glass p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-5">
+                <div class="h-14 w-14 rounded-2xl status-badge flex items-center justify-center overflow-hidden relative">
+                    <svg class="w-9 h-9 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="filter: drop-shadow(0 0 6px rgba(0, 243, 255, 0.8));">
+                        <circle cx="12" cy="12" r="10" stroke-width="1.5" stroke-dasharray="3 3" class="animate-[spin_10s_linear_infinite]" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5l6.5 3.75v7.5L12 19.5l-6.5-3.75v-7.5L12 4.5z" class="animate-[spin_15s_linear_infinite_reverse]" />
+                        <circle cx="12" cy="12" r="2.5" fill="currentColor" class="animate-pulse" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4.5v2.5M12 17v2.5M5.5 8.25l2.5 1.5M18.5 15.75l-2.5-1.5M18.5 8.25l-2.5 1.5M5.5 15.75l2.5-1.5" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 text-neon-blue">
+                        ClimaControl
+                    </h1>
+                    <p class="text-[var(--text-muted)] text-[10px] sm:text-xs tracking-widest uppercase mt-1 font-semibold">Feel The Future Of Temperature Control, Thinking Ahead Of Temperature.</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="ctrl-btn p-3 rounded-xl flex items-center justify-center focus:outline-none" title="Toggle Light/Dark Mode">
+                    <svg id="theme-icon-moon" class="w-5 h-5 block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="theme-icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+                <div class="flex items-center gap-3 px-5 py-2 status-badge">
+                    <span class="relative flex h-3 w-3">
+                      <span id="ping-dot" class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+                      <span id="solid-dot" class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                    <span class="text-sm font-bold tracking-widest uppercase text-[var(--text-muted)]" id="status-text">STANDBY</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+            <div class="lg:col-span-4 space-y-6 lg:space-y-8">
+                
+                <div class="neo-glass p-8 flex flex-col items-center justify-center text-center">
+                    <h3 class="text-[var(--text-muted)] text-sm font-bold tracking-widest uppercase mb-6">Cooling Turbine</h3>
+                    <div class="relative w-36 h-36 mb-6 p-4 rounded-full status-badge flex items-center justify-center">
+                        <div id="fan-glow" class="absolute inset-0 rounded-full bg-cyan-500/10 blur-xl transition-all duration-500"></div>
+                        <svg id="fan-svg" class="w-full h-full text-[var(--text-muted)] drop-shadow-lg fan-blade transition-colors duration-500 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8Z"/>
+                            <path d="M12 6.5a1.5 1.5 0 0 0-1.5 1.5c0 1.258 1.41 1.83 2.122 2.542.712.712 1.284 2.122 2.542 2.122a1.5 1.5 0 0 0 0-3c-1.258 0-1.83-1.41-2.542-2.122C11.91 6.83 12 6.5 12 6.5Z"/>
+                            <path d="M12 17.5a1.5 1.5 0 0 0 1.5-1.5c0-1.258-1.41-1.83-2.122-2.542-.712-.712-1.284-2.122-2.542-2.122a1.5 1.5 0 0 0 0 3c1.258 0 1.83 1.41 2.542 2.122.712.712.122 1.042 1.5 1.042Z"/>
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2 status-badge px-6 py-2">
+                        <span class="text-4xl font-orbitron font-bold text-[var(--text-main)] transition-all duration-300" id="speed-val">0</span>
+                        <span class="text-sm font-bold text-[var(--text-muted)]">PWM</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="neo-glass p-5 relative overflow-hidden flex flex-col items-center">
+                        <svg class="absolute -bottom-2 -right-2 w-20 h-20 text-rose-500/10" fill="currentColor" viewBox="0 0 24 24"><path d="M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zm-3-9a1 1 0 0 1 1 1v4h-2V5a1 1 0 0 1 1-1z"/></svg>
+                        <h3 class="text-[var(--text-muted)] text-xs font-bold tracking-widest uppercase mb-3">Core Temp</h3>
+                        <div class="flex items-start gap-1 status-badge px-4 py-2 w-full justify-center">
+                            <span class="text-2xl sm:text-3xl font-orbitron font-bold text-[var(--text-main)]" id="temp-val">--</span>
+                            <span class="text-md font-bold text-rose-500">°C</span>
+                        </div>
+                    </div>
+                    <div class="neo-glass p-5 relative overflow-hidden flex flex-col items-center">
+                        <svg class="absolute -bottom-2 -right-2 w-20 h-20 text-sky-500/10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                        <h3 class="text-[var(--text-muted)] text-xs font-bold tracking-widest uppercase mb-3">Humidity</h3>
+                        <div class="flex items-start gap-1 status-badge px-4 py-2 w-full justify-center">
+                            <span class="text-2xl sm:text-3xl font-orbitron font-bold text-[var(--text-main)]" id="hum-val">--</span>
+                            <span class="text-md font-bold text-sky-500">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="neo-glass p-5 text-center">
+                    <h3 class="text-[var(--text-muted)] text-xs font-bold tracking-widest uppercase mb-3">System Status</h3>
+                    <div id="alert-badge" class="status-badge border border-[var(--border-color)] px-6 py-3 rounded-xl font-orbitron font-bold tracking-widest uppercase text-[var(--text-muted)] transition-all duration-300">
+                        STANDBY
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
+                
+                <div class="neo-glass p-6 sm:p-8">
+                    <h2 class="text-xl font-orbitron font-bold text-[var(--text-main)] tracking-wider flex items-center gap-3 mb-6">
+                        <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M4 17h16a2 2 0 002-2V9a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                        NEURAL DIRECTIVES
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <button onclick="setMode('off')" id="btn-off" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 group">
+                            <svg class="w-5 h-5 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            OFF
+                        </button>
+                        <button onclick="setMode('auto')" id="btn-auto" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 group">
+                            <svg class="w-5 h-5 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Auto
+                        </button>
+                        <button onclick="setMode('low')" id="btn-low" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 group">
+                            <svg class="w-5 h-5 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                            Low
+                        </button>
+                        <button onclick="setMode('mid')" id="btn-mid" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 group">
+                            <svg class="w-5 h-5 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Mid
+                        </button>
+                        <button onclick="setMode('high')" id="btn-high" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 group">
+                            <svg class="w-5 h-5 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                            High
+                        </button>
+                        <button onclick="setMode('ai')" id="btn-ai" class="ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 col-span-2 sm:col-span-1 lg:col-span-1 group">
+                            <svg class="w-5 h-5 group-hover:animate-pulse transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            AI
+                        </button>
+                    </div>
+
+                    <div id="ai-status-container" class="hidden mt-6">
+                        <div class="status-badge border border-purple-500/20 rounded-xl p-5 relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-[2px] bg-purple-600/40 shadow-[0_0_10px_rgba(176,38,255,0.8)] animate-[scan_2s_ease-in-out_infinite]"></div>
+                            
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <span class="text-purple-500 font-orbitron font-bold text-xs tracking-widest flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-purple-600 animate-ping"></span>
+                                        GEMINI NEURAL LINK
+                                    </span>
+                                    <p class="text-[var(--text-muted)] font-mono text-[11px] mt-2" id="ai-thought">Awaiting telemetry data...</p>
+                                </div>
+                                <div class="neo-glass text-left sm:text-right px-4 py-2 rounded-lg border-purple-500/10 min-w-[100px]">
+                                    <span class="text-[9px] tracking-widest uppercase text-purple-400 block mb-1">Target PWM</span>
+                                    <span class="text-xl font-orbitron font-bold text-[var(--text-main)]" id="ai-pwm-display">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="neo-glass p-6 sm:p-8 flex-grow flex flex-col">
+                    <h2 class="text-xl font-orbitron font-bold text-[var(--text-main)] tracking-wider flex items-center gap-3 mb-6">
+                        <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                        LIVE TELEMETRY
+                    </h2>
+                    <div class="relative w-full flex-grow min-h-[250px] status-badge p-4 rounded-2xl">
+                        <canvas id="thermalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style> @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } } </style>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBv6RvYUwO2r5KMwarh_kSRmqK-f59XNtE",
+            authDomain: "temperaturectrl.firebaseapp.com",
+            projectId: "temperaturectrl",
+            databaseURL: "https://temperaturectrl-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            storageBucket: "temperaturectrl.firebasestorage.app",
+            messagingSenderId: "913232311996",
+            appId: "1:913232311996:web:60c339812f79cfe95ec2b9",
+            measurementId: "G-E0Q7V1BYGZ"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        const GEMINI_API_KEY = "AIzaSyArIBGaZBEGS6V2Plwgh25btBOuTTe4ffM";
+        let aiInterval = null;
+
+        let currentTemp = 0; let currentHum = 0; let currentPWM = 0;
+        let activeMode = 'off';
+        const modes = ['off', 'auto', 'low', 'mid', 'high', 'ai'];
+        let sensorIsError = false;
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            
+            document.getElementById('theme-icon-moon').style.display = isLight ? 'none' : 'block';
+            document.getElementById('theme-icon-sun').style.display = isLight ? 'block' : 'none';
+            
+            const chartTextColor = isLight ? '#475569' : '#cbd5e1';
+            const chartGridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.02)';
+            
+            thermalChart.options.scales.x.ticks.color = chartTextColor;
+            thermalChart.options.scales.x.grid.color = chartGridColor;
+            thermalChart.options.scales.y.grid.color = chartGridColor;
+            thermalChart.update();
+        }
+
+        let audioCtx;
+        let isAlarmPlaying = false;
+        let alarmTimeoutId = null;
+        let alarmMuted = false;
+
+        function initializeSystem() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            document.getElementById('init-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('init-overlay').style.display = 'none', 500);
+            connectDatabase();
+        }
+
+        function playOverheatAlarm() {
+            if (!audioCtx || isAlarmPlaying || alarmMuted) return;
+            isAlarmPlaying = true;
+            
+            document.getElementById('overheat-modal').classList.add('active');
+            document.getElementById('overheat-temp-display').innerText = `Core Temp at ${currentTemp.toFixed(1)}°C`;
+
+            const duration = 10; 
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
+
+            for(let i = 0; i < duration; i += 0.8) {
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime + i);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime + i + 0.4);
+            }
+
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            
+            osc.stop(audioCtx.currentTime + duration);
+            alarmTimeoutId = setTimeout(() => {
+                isAlarmPlaying = false;
+                document.getElementById('overheat-modal').classList.remove('active');
+            }, duration * 1000);
+        }
+
+        function dismissAlarm() {
+            alarmMuted = true; 
+            document.getElementById('overheat-modal').classList.remove('active');
+            if(audioCtx) audioCtx.suspend(); 
+            setTimeout(() => { if(audioCtx) audioCtx.resume(); }, 10000); 
+        }
+
+        function resetAlarmState() {
+            if(currentTemp < 32) {
+                alarmMuted = false;
+                isAlarmPlaying = false;
+                document.getElementById('overheat-modal').classList.remove('active');
+                if(alarmTimeoutId) clearTimeout(alarmTimeoutId);
+            }
+        }
+
+        function connectDatabase() {
+            auth.signInAnonymously().then(() => {
+                document.getElementById('status-text').innerText = "SYSTEM ONLINE";
+                document.getElementById('status-text').className = "text-sm font-bold tracking-widest uppercase text-cyan-500 text-neon-blue";
+                document.getElementById('ping-dot').className = "absolute inline-flex h-full w-full rounded-full bg-cyan-500 opacity-75 animate-ping";
+                document.getElementById('solid-dot').className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-600";
+                startDatabaseListeners();
+            }).catch((error) => {
+                document.getElementById('status-text').innerText = "LINK FAILED";
+                document.getElementById('solid-dot').className = "relative inline-flex rounded-full h-3 w-3 bg-red-600";
+            });
+        }
+
+        const ctx = document.getElementById('thermalChart').getContext('2d');
+        let tempGradient = ctx.createLinearGradient(0, 0, 0, 400); tempGradient.addColorStop(0, 'rgba(244, 63, 94, 0.3)'); tempGradient.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+        let humGradient = ctx.createLinearGradient(0, 0, 0, 400); humGradient.addColorStop(0, 'rgba(56, 189, 248, 0.15)'); humGradient.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+        const chartData = {
+            labels: [], datasets: [
+                { label: 'Temp', borderColor: '#e11d48', backgroundColor: tempGradient, data: [], tension: 0.4, fill: true, borderWidth: 2, pointRadius: 2, yAxisID: 'y' },
+                { label: 'Hum', borderColor: '#0284c7', backgroundColor: humGradient, data: [], tension: 0.4, fill: true, borderWidth: 2, pointRadius: 0, yAxisID: 'y1' }
+            ]
+        };
+
+        const thermalChart = new Chart(ctx, {
+            type: 'line', data: chartData,
+            options: {
+                responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.02)', drawBorder: false }, ticks: { color: '#cbd5e1' } },
+                    y: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#e11d48' } },
+                    y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0284c7' } }
+                }
+            }
+        });
+
+        function updateDisplayedSpeed() {
+            let displaySpeed = 0;
+            if (activeMode === 'off') displaySpeed = 0;
+            else if (activeMode === 'low') displaySpeed = 100;
+            else if (activeMode === 'mid') displaySpeed = 175;
+            else if (activeMode === 'high') displaySpeed = 255;
+            else if (activeMode === 'auto') {
+                if (currentTemp < 25.0) displaySpeed = 0;
+                else if (currentTemp >= 25.0 && currentTemp < 28.0) displaySpeed = 120;
+                else if (currentTemp >= 28.0 && currentTemp < 31.0) displaySpeed = 180;
+                else displaySpeed = 255;
+            } else if (activeMode === 'ai') displaySpeed = currentPWM; 
+            
+            document.getElementById('speed-val').innerText = displaySpeed;
+            updateFanAnimation(displaySpeed);
+        }
+
+        function startDatabaseListeners() {
+            db.ref('/sensor/error').on('value', (snapshot) => {
+                sensorIsError = snapshot.val() || false;
+                if(sensorIsError) {
+                    document.getElementById('temp-val').innerText = "ERR";
+                    document.getElementById('hum-val').innerText = "ERR";
+                    updateAlertStatus(0); 
+                }
+            });
+
+            db.ref('/sensor/temperature').on('value', (snapshot) => {
+                if(!sensorIsError) {
+                    currentTemp = snapshot.val() || 0;
+                    document.getElementById('temp-val').innerText = currentTemp.toFixed(1);
+                    updateAlertStatus(currentTemp);
+                    updateGraph(currentTemp, currentHum);
+                    updateDisplayedSpeed(); 
+                }
+            });
+
+            db.ref('/sensor/humidity').on('value', (snapshot) => {
+                if(!sensorIsError) {
+                    currentHum = snapshot.val() || 0;
+                    document.getElementById('hum-val').innerText = currentHum.toFixed(1);
+                }
+            });
+
+            db.ref('/control/mode').on('value', (snapshot) => {
+                const mode = snapshot.val() || 'off';
+                updateModeUI(mode);
+                activeMode = mode;
+                updateDisplayedSpeed(); 
+                
+                if(mode === 'ai') {
+                    document.getElementById('ai-status-container').classList.remove('hidden');
+                    if(!aiInterval) { runAIOptimizer(); aiInterval = setInterval(runAIOptimizer, 15000); }
+                } else {
+                    document.getElementById('ai-status-container').classList.add('hidden');
+                    if(aiInterval) { clearInterval(aiInterval); aiInterval = null; }
+                }
+            });
+
+            db.ref('/control/fanSpeed').on('value', (snapshot) => {
+                currentPWM = snapshot.val() || 0;
+                updateDisplayedSpeed(); 
+            });
+        }
+
+        function setMode(mode) { db.ref('/control/mode').set(mode); }
+
+        function updateModeUI(selectedMode) {
+            modes.forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                const icon = btn.querySelector('svg');
+                if (!btn) return;
+                
+                let baseClasses = "ctrl-btn py-4 font-bold tracking-wider uppercase text-xs flex flex-col items-center gap-2 transition-colors duration-300";
+                if (m === 'ai') baseClasses += " col-span-2 sm:col-span-1 lg:col-span-1 group";
+                
+                if (m === selectedMode) {
+                    btn.className = `${baseClasses} mode-${m}-active`;
+                    if(icon) icon.className = `w-5 h-5 transition-colors duration-300 ${m==='ai'?'animate-pulse':''}`;
+                } else {
+                    let hoverClasses = "";
+                    if (m === 'off') hoverClasses = "hover:text-[var(--accent-red)] hover:border-[var(--accent-red)]";
+                    if (m === 'auto') hoverClasses = "hover:text-[var(--accent-blue)] hover:border-[var(--accent-blue)]";
+                    if (m === 'low') hoverClasses = "hover:text-[var(--accent-green)] hover:border-[var(--accent-green)]";
+                    if (m === 'mid') hoverClasses = "hover:text-[var(--accent-orange)] hover:border-[var(--accent-orange)]";
+                    if (m === 'high') hoverClasses = "hover:text-[var(--accent-hot)] hover:border-[var(--accent-hot)]";
+                    if (m === 'ai') hoverClasses = "hover:text-[var(--accent-purple)] hover:border-[var(--accent-purple)]";
+                    
+                    btn.className = `${baseClasses} ${hoverClasses} hover:bg-opacity-5`;
+                    if(icon) icon.className = `w-5 h-5 transition-colors duration-300`;
+                }
+            });
+        }
+
+        function updateAlertStatus(temp) {
+            const badge = document.getElementById('alert-badge');
+            
+            if (sensorIsError) {
+                badge.className = "status-badge border border-red-600/40 px-6 py-3 rounded-xl font-orbitron font-bold tracking-widest uppercase text-red-600 text-neon-red w-full text-center transition-all duration-300";
+                badge.innerHTML = '⚠️ SENSOR ERROR';
+                return;
+            }
+
+            if (temp >= 32) { 
+                badge.className = "status-badge border border-red-600/40 px-6 py-3 rounded-xl font-orbitron font-bold tracking-widest uppercase text-red-600 text-neon-red w-full text-center transition-all duration-300 animate-pulse";
+                badge.innerHTML = 'CRITICAL OVERHEAT';
+                playOverheatAlarm(); 
+            } else if (temp >= 30) {
+                badge.className = "status-badge border border-orange-500/40 px-6 py-3 rounded-xl font-orbitron font-bold tracking-widest uppercase text-orange-500 w-full text-center transition-all duration-300";
+                badge.innerHTML = 'WARNING: WARM';
+                resetAlarmState();
+            } else {
+                badge.className = "status-badge border border-[var(--border-color)] px-6 py-3 rounded-xl font-orbitron font-bold tracking-widest uppercase text-green-500 w-full text-center transition-all duration-300";
+                badge.innerHTML = 'OPTIMAL RUNNING';
+                resetAlarmState();
+            }
+        }
+
+        function updateFanAnimation(pwm) {
+            const fanSvg = document.getElementById('fan-svg');
+            const fanGlow = document.getElementById('fan-glow');
+            if (pwm <= 0) {
+                fanSvg.style.animation = 'none'; fanSvg.classList.remove('text-cyan-500'); fanSvg.classList.add('text-[var(--text-muted)]');
+                fanGlow.style.opacity = '0';
+            } else {
+                let duration = 2.0 - ((pwm / 255) * 1.8); 
+                fanSvg.style.animation = `spin-fan ${duration}s linear infinite`;
+                fanSvg.classList.remove('text-[var(--text-muted)]'); fanSvg.classList.add('text-cyan-500');
+                fanGlow.style.opacity = (pwm / 255).toString();
+            }
+        }
+
+        function updateGraph(temp, hum) {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+            chartData.labels.push(timeStr); chartData.datasets[0].data.push(temp); chartData.datasets[1].data.push(hum);
+            if (chartData.labels.length > 20) { chartData.labels.shift(); chartData.datasets[0].data.shift(); chartData.datasets[1].data.shift(); }
+            thermalChart.update();
+        }
+
+        async function runAIOptimizer() {
+            if(currentTemp === 0 || sensorIsError) return; 
+            const thoughtUI = document.getElementById('ai-thought');
+            thoughtUI.innerHTML = '> EXECUTING NEURAL ANALYSIS... <span class="animate-pulse">_</span>';
+            const prompt = `You are the AI brain of a futuristic smart cooling matrix. Current temp: ${currentTemp}°C. Humidity: ${currentHum}%. Determine optimal cooling fan PWM (0-255). Rules: <24°C = 0. >34°C = 255. Otherwise, balance efficiency. Reply ONLY with the integer.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                if(data.candidates && data.candidates.length > 0) {
+                    const suggestedSpeed = parseInt(data.candidates[0].content.parts[0].text.trim());
+                    if(!isNaN(suggestedSpeed)) {
+                        thoughtUI.innerText = `> OPTIMIZATION SECURED // APPLYING PWM: ${suggestedSpeed}`;
+                        document.getElementById('ai-pwm-display').innerText = suggestedSpeed;
+                        db.ref('/control/fanSpeed').set(suggestedSpeed);
+                    }
+                }
+            } catch (err) { thoughtUI.innerText = "> UPLINK ERROR // RETRYING..."; }
+        }
+    </script>
+</body>
+</html>
