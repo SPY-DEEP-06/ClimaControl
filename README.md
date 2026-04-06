@@ -1,18 +1,18 @@
 <div align="center">
 
-<!-- Animated Typing Title -->
+ClimaControl
 
-<a href="https://www.google.com/search?q=https://git.io/typing-svg"><img src="https://www.google.com/search?q=https://readme-typing-svg.demolab.com%3Ffont%3DOrbitron%26weight%3D700%26size%3D40%26pause%3D1000%26color%3D00F3FF%26center%3Dtrue%26vCenter%3Dtrue%26width%3D600%26lines%3DClimaControl%3BThermal%2BCore%2B//%2BV4%3BIoT%2BAutomated%2BCooling%2BMatrix" alt="Typing SVG" /></a>
+IoT Automated Cooling Matrix
 
 Feel The Future Of Temperature Control, Thinking Ahead Of Temperature.
 
 <!-- Badges -->
 
 <p align="center">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Hardware-ESP32-blue%3Fstyle%3Dfor-the-badge%26logo%3Despressif%26logoColor%3Dwhite" />
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Frontend-HTML5%2520|%20TailwindCSS-orange?style=for-the-badge&logo=html5&logoColor=white" />
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Database-Firebase%2520RTDB-FFCA28%3Fstyle%3Dfor-the-badge%26logo%3Dfirebase%26logoColor%3Dwhite" />
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/AI-Google%2520Gemini-8E75B2%3Fstyle%3Dfor-the-badge%26logo%3Dgoogle%26logoColor%3Dwhite" />
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Hardware-ESP32-blue%3Fstyle%3Dfor-the-badge%26logo%3Despressif%26logoColor%3Dwhite" alt="Hardware: ESP32" />
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Frontend-HTML5%2520|%20TailwindCSS-orange?style=for-the-badge&logo=html5&logoColor=white" alt="Frontend: HTML5 & Tailwind" />
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Database-Firebase%2520RTDB-FFCA28%3Fstyle%3Dfor-the-badge%26logo%3Dfirebase%26logoColor%3Dwhite" alt="Database: Firebase RTDB" />
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/AI-Google%2520Gemini-8E75B2%3Fstyle%3Dfor-the-badge%26logo%3Dgoogle%26logoColor%3Dwhite" alt="AI: Google Gemini" />
 </p>
 
 </div>
@@ -135,7 +135,6 @@ Apply the following Database Rules for production security:
 }
 
 
-
 Copy your Firebase Config object.
 
 2. ESP32 Deployment
@@ -161,10 +160,9 @@ Host the file via GitHub Pages, Firebase Hosting, or simply open it locally in y
 📸 Interface Preview
 
 <div align="center">
-<!-- Note: Replace this placeholder with an actual GIF/Image of your dashboard when uploading to Github! -->
-<img src="https://www.google.com/search?q=https://via.placeholder.com/800x450/0b111a/00f3ff%3Ftext%3DClimaControl%2BDashboard%2BScreenshot" alt="ClimaControl Dashboard Preview" width="800"/>
-</div>
 
-<p align="center">
-<i>Engineered for optimal thermals. Designed for the future.</i>
-</p>
+[ Your Dashboard Screenshot Goes Here ]
+
+Engineered for optimal thermals. Designed for the future.
+
+</div>
