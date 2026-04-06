@@ -135,6 +135,7 @@ Apply the following Database Rules for production security:
 }
 
 
+
 Copy your Firebase Config object.
 
 2. ESP32 Deployment
