@@ -1,0 +1,2 @@
+# ClimaControl
+❄️ ClimaControl: A futuristic, AI-driven IoT thermal monitoring and automated cooling system using ESP32, Firebase RTDB, and Google Gemini AI. Features a stunning Neo-Glassmorphism web dashboard with real-time telemetry, Neural Directives, and dynamic audio alarms.
